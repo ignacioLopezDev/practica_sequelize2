@@ -16,8 +16,9 @@ Users.init(
             },
             allowNull:false
         }
-    },{
-        sequelize: db, modelName: "users"
+    },
+    {
+        timestamps:false, sequelize: db, modelName: "users"
     }
 )
 

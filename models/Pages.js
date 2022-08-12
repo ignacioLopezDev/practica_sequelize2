@@ -7,18 +7,45 @@ Pages.init(
   {
     title: {
       type: S.STRING,
-      allowNull:false
+      allowNull: false,
     },
     urlTitle: {
       type: S.STRING,
-      allowNull:false
+      allowNull: false,
     },
-    conten: {
+    content: {
       type: S.TEXT,
-      allowNull:false
+      allowNull: false,
+    },
+    route: {
+      type: S.VIRTUAL,
+      get() {
+        return `/wiki/${this.getDataValue("urlTitle")}`;
+      },
+    },
+    tags: {
+      type: S.ARRAY(S.STRING),
+      defaultValue: [],
+      set: (tags) => {
+        tagas = tags || [];
+        if (typeof tags === "string") {
+          tags = tags.split(",").map((str) => {
+            return str.trim();
+          });
+        }
+        this.setDataValue("tags", tags);
+      },
     },
   },
-  { sequelize: db, modelName: "pages" }
+  { timestamps: false, sequelize: db, modelName: "pages" }
 );
+
+// hook de url_title
+Pages.beforeValidate((page, options) => {
+  if (page.title) {
+    page.urlTitle = page.title.replace(/\s+/g, "_").replace(/\W/g, "");
+    options.fields.push("urlTitle");
+  }
+});
 
 module.exports = Pages;
