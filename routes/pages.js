@@ -15,13 +15,14 @@ pages.post("/", (req, res, next) => {
   console.log("este es el req.body", req.body);
   const { name, email } = req.body;
   Users.findOrCreate({ where: { name, email } })
-  .then((result) => {
-    console.log('ESTE ES EL AUTHOR', result)
-    const author = result[0];
-    Pages.create(req.body)
-      .then((newPost) => newPost.setAuthor(author))
-      .then((newPost) => res.send(newPost));
-  }).catch(next);
+    .then((result) => {
+      console.log("ESTE ES EL AUTHOR", result);
+      const author = result[0];
+      Pages.create(req.body)
+        .then((newPost) => newPost.setAuthor(author))
+        .then((newPost) => res.send(newPost));
+    })
+    .catch(next);
 });
 
 pages.get("/:urlTitle", (req, res, next) => {
@@ -53,7 +54,7 @@ pages.get("/:urlTitle", (req, res, next) => {
   const { urlTitle } = req.params;
   Pages.findOne({
     where: { urlTitle },
-    include: { model: Users, as: 'author' },
+    include: { model: Users, as: "author" },
   })
     .then((result) => {
       if (!result) return next("No se encontró");
@@ -62,5 +63,22 @@ pages.get("/:urlTitle", (req, res, next) => {
     .catch(next);
 });
 
+pages.get("/search/:tag", (req, res) => {
+  Pages.finfByTag(req.params.tag).then((pages) => {
+    res.send(pages);
+  });
+});
+
+pages.get("/:urlTitle/similar", (req, res) => {
+  Pages.findAll({
+    where: { urlTitle: req.params.urlTitle },
+  })
+    .then((page) => {
+      return page.findSimilar();
+    })
+    .then((pages) => {
+      res.send(pages);
+    });
+});
 
 module.exports = pages;
